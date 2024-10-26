@@ -58,7 +58,7 @@ public class Main {
           "Content-Length: " + contentLength + "\r\n" +
           "\r\n" +
           message;
-        
+          System.out.println(httpResponse);
           clientSocket.getOutputStream().write(
           httpResponse.getBytes());
         }else{
