@@ -27,13 +27,29 @@ public class Main {
       String requestLine = in.readLine();
       if (requestLine != null && !requestLine.isEmpty()) {
         String[] requestParts = requestLine.split(" ");
-        if (requestParts[1].equals("/")) {
+        System.out.println(requestLine);
+        // if (requestParts[1].equals("/")) {
+        //   clientSocket.getOutputStream().write(
+        //   "HTTP/1.1 200 OK\r\n\r\n".getBytes());
+        // }else{
+        //   clientSocket.getOutputStream().write(
+        //   "HTTP/1.1 404 Not Found\r\n\r\n".getBytes());
+        // }
+
+        String message = requestParts[1].split("/")[1];
+        String contentType = "text/plain"; // Specify the type of content
+        int contentLength = message.length(); // Get the length of the response body
+
+          // Build HTTP response with headers
+          String httpResponse = 
+            "HTTP/1.1 200 OK\r\n" +
+            "Content-Type: " + contentType + "\r\n" +
+            "Content-Length: " + contentLength + "\r\n" +
+            "\r\n" + 
+            message;
+
           clientSocket.getOutputStream().write(
-          "HTTP/1.1 200 OK\r\n\r\n".getBytes());
-        }else{
-          clientSocket.getOutputStream().write(
-          "HTTP/1.1 404 Not Found\r\n\r\n".getBytes());
-        }
+          httpResponse.getBytes());
       }
       
     } catch (IOException e) {
