@@ -6,7 +6,38 @@ import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
+class ClientHandler implements Runnable {
+  private final Socket clientSocket;
+
+  public ClientHandler(Socket clientSocket) {
+    this.clientSocket = clientSocket;
+  }
+
+  @Override
+  public void run() {
+    try {
+      BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+      String requeString = in.readLine();
+      if (requeString != null) {
+        String httpResponse = "HTTP/1.1 200 OK\r\n\r\n";
+        clientSocket.getOutputStream().write(httpResponse.getBytes());
+      }
+    } catch (IOException e) {
+      System.out.println("IOException: " + e.getMessage());
+    } finally {
+      try {
+        clientSocket.close(); // Ensure the client socket is closed
+      } catch (IOException e) {
+        System.out.println("IOException while closing clientSocket: " + e.getMessage());
+      }
+    }
+  }
+
+}
+
+
 public class Main {
+
   public static void main(String[] args) {
     // You can use print statements as follows for debugging, they'll be visible
     // when running tests.
@@ -14,101 +45,19 @@ public class Main {
 
     // Uncomment this block to pass the first stage
     ServerSocket serverSocket = null;
-    Socket clientSocket = null;
+    // Socket clientSocket = null;
     try {
       serverSocket = new ServerSocket(4221);
-
-      // Since the tester restarts your program quite often, setting SO_REUSEADDR
-      // ensures that we don't run into 'Address already in use' errors
       serverSocket.setReuseAddress(true);
-
-      // serverSocket.accept(); // Wait for connection from client.
-      clientSocket = serverSocket.accept();
-      System.out.println("accepted new connection");
-
-      BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-      String requestLine = in.readLine();
-      if (requestLine != null && !requestLine.isEmpty()) {
-        // String[] requestParts = requestLine.split(" ");
-        System.out.println(requestLine);
-        // if (requestParts[1].equals("/")) {
-        // clientSocket.getOutputStream().write(
-        // "HTTP/1.1 200 OK\r\n\r\n".getBytes());
-        // }else{
-        // clientSocket.getOutputStream().write(
-        // "HTTP/1.1 404 Not Found\r\n\r\n".getBytes());
-        // }
-
-        Map<String, String> headers = new HashMap<>();
-        String headerLine;
-        while ((headerLine = in.readLine()) != null && !headerLine.isEmpty()) {
-          String[] headerParts = headerLine.split(": ", 2);
-          if (headerParts.length == 2) {
-            headers.put(headerParts[0], headerParts[1]);
-          }
+      while (true) {
+        try {
+          Socket clientSocket = serverSocket.accept(); // wait for client connection
+          ClientHandler ch = new ClientHandler(clientSocket);
+          new Thread(ch).start();
+        } catch (IOException e) {
+          System.out.println("IOException: " + e.getMessage());
         }
-        String message = "";
-        if (headers.containsKey("User-Agent")) {
-          message = headers.get("User-Agent");
-
-          // System.out.println(httpResponse);
-          
-        } else {
-          String[] requestParts = requestLine.split(" ");
-
-          if (requestParts[1].startsWith("/echo/")) {
-            message = requestParts[1].substring("/echo/".length());
-          } else if (requestParts[1].equals("/")) {
-            message = "000";
-          } else {
-            message = "XXX";
-          }
-        }
-        if (message.equals("XXX")) {
-          clientSocket.getOutputStream().write(
-              "HTTP/1.1 404 Not Found\r\n\r\n".getBytes());
-        } else if (message.equals("000")) {
-          clientSocket.getOutputStream().write(
-              "HTTP/1.1 200 OK\r\n\r\n".getBytes());
-        } else {
-          String contentType = "text/plain"; // Specify the type of content
-          int contentLength = message.length(); // Get the length of the response body
-          System.out.println(message);
-          // Build HTTP response with headers
-          String httpResponse = "HTTP/1.1 200 OK\r\n" +
-              "Content-Type: " + contentType + "\r\n" +
-              "Content-Length: " + contentLength + "\r\n" +
-              "\r\n" +
-              message;
-          clientSocket.getOutputStream().write(
-              httpResponse.getBytes());
-
-        }
-
-        // if (requestParts[1].startsWith("/echo/")) {
-        // String message = requestParts[1].substring("/echo/".length());
-        // String contentType = "text/plain"; // Specify the type of content
-        // int contentLength = message.length(); // Get the length of the response body
-        // System.out.println(message);
-        // // Build HTTP response with headers
-        // String httpResponse = "HTTP/1.1 200 OK\r\n" +
-        // "Content-Type: " + contentType + "\r\n" +
-        // "Content-Length: " + contentLength + "\r\n" +
-        // "\r\n" +
-        // message;
-
-        // clientSocket.getOutputStream().write(
-        // httpResponse.getBytes());
-        // } else if (requestParts[1].equals("/")) {
-        // clientSocket.getOutputStream().write(
-        // "HTTP/1.1 200 OK\r\n\r\n".getBytes());
-        // } else {
-        // clientSocket.getOutputStream().write(
-        // "HTTP/1.1 404 Not Found\r\n\r\n".getBytes());
-        // }
-
       }
-
     } catch (IOException e) {
       System.out.println("IOException: " + e.getMessage());
     }
