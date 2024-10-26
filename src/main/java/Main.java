@@ -25,11 +25,9 @@ public class Main {
 
       BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
       String requestLine = in.readLine();
-      String url = "";
       if (requestLine != null && !requestLine.isEmpty()) {
         String[] requestParts = requestLine.split(" ");
-        if (requestParts.length > 1) {
-          url = requestParts[1];
+        if (requestParts[1].equals("/")) {
           clientSocket.getOutputStream().write(
           "HTTP/1.1 200 OK\r\n\r\n".getBytes());
         }else{
