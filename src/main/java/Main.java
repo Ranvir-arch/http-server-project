@@ -35,21 +35,26 @@ public class Main {
         //   clientSocket.getOutputStream().write(
         //   "HTTP/1.1 404 Not Found\r\n\r\n".getBytes());
         // }
-
-        String message = requestParts[1].substring("/echo/".length());
-        String contentType = "text/plain"; // Specify the type of content
-        int contentLength = message.length(); // Get the length of the response body
-        System.out.println(message);
-          // Build HTTP response with headers
-          String httpResponse = 
-            "HTTP/1.1 200 OK\r\n" +
-            "Content-Type: " + contentType + "\r\n" +
-            "Content-Length: " + contentLength + "\r\n" +
-            "\r\n" + 
-            message;
-
+        if (requestParts[1].startsWith("/echo/")){
+          String message = requestParts[1].substring("/echo/".length());
+          String contentType = "text/plain"; // Specify the type of content
+          int contentLength = message.length(); // Get the length of the response body
+          System.out.println(message);
+            // Build HTTP response with headers
+            String httpResponse = 
+              "HTTP/1.1 200 OK\r\n" +
+              "Content-Type: " + contentType + "\r\n" +
+              "Content-Length: " + contentLength + "\r\n" +
+              "\r\n" + 
+              message;
+  
+            clientSocket.getOutputStream().write(
+            httpResponse.getBytes());
+        }else{
           clientSocket.getOutputStream().write(
-          httpResponse.getBytes());
+          "HTTP/1.1 404 Not Found\r\n\r\n".getBytes());
+        }
+
       }
       
     } catch (IOException e) {
