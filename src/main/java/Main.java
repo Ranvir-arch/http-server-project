@@ -63,7 +63,7 @@ public class Main {
           httpResponse.getBytes());
         }else{
           clientSocket.getOutputStream().write(
-        "HTTP/1.1 404 Not Found\r\n\r\n".getBytes());
+        "HTTP/1.1 200 OK\r\n\r\n".getBytes());
         }
         // if (requestParts[1].startsWith("/echo/")) {
         // String message = requestParts[1].substring("/echo/".length());
