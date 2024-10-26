@@ -39,7 +39,7 @@ public class Main {
         String message = requestParts[1].split("/")[1];
         String contentType = "text/plain"; // Specify the type of content
         int contentLength = message.length(); // Get the length of the response body
-
+        System.out.println(message);
           // Build HTTP response with headers
           String httpResponse = 
             "HTTP/1.1 200 OK\r\n" +
