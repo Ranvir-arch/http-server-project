@@ -36,7 +36,7 @@ public class Main {
         //   "HTTP/1.1 404 Not Found\r\n\r\n".getBytes());
         // }
 
-        String message = requestParts[1].split("/")[2];
+        String message = requestParts[1].substring("/echo/".length());
         String contentType = "text/plain"; // Specify the type of content
         int contentLength = message.length(); // Get the length of the response body
         System.out.println(message);
