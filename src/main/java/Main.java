@@ -13,9 +13,11 @@ import java.util.Map;
 
 class ClientHandler implements Runnable {
   private final Socket clientSocket;
+  private final String directory;
 
-  public ClientHandler(Socket clientSocket) {
+  public ClientHandler(Socket clientSocket, String directory) {
     this.clientSocket = clientSocket;
+    this.directory = directory;
   }
 
   @Override
@@ -49,11 +51,12 @@ class ClientHandler implements Runnable {
           } else if (requestParts[1].startsWith("/files/")) {
             String fileName = requestParts[1].substring("/files/".length());
             System.out.println(fileName);
-            Path path = Paths.get(fileName);
+            Path path = Paths.get(directory+fileName);
             message = "111";
             try{
               String fileContent = new String(Files.readAllBytes(path));
               String contentType = "application/octet-stream"; // Adjust content type based on file type
+              System.out.println(fileContent);
               String httpResponse = "HTTP/1.1 200 OK\r\n" +
                   "Content-Type: " + contentType + "\r\n" +
                   "Content-Length: " + fileContent.length() + "\r\n" +
@@ -107,6 +110,10 @@ class ClientHandler implements Runnable {
 public class Main {
 
   public static void main(String[] args) {
+    String directory="";
+    if (args.length > 1 && args[0].equals("--directory")) {
+      directory = args[1];
+    }
     // You can use print statements as follows for debugging, they'll be visible
     // when running tests.
     System.out.println("Logs from your program will appear here!");
@@ -120,7 +127,7 @@ public class Main {
       while (true) {
         try {
           Socket clientSocket = serverSocket.accept(); // wait for client connection
-          ClientHandler ch = new ClientHandler(clientSocket);
+          ClientHandler ch = new ClientHandler(clientSocket, directory);
           new Thread(ch).start();
         } catch (IOException e) {
           System.out.println("IOException: " + e.getMessage());
