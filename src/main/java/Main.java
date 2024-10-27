@@ -52,14 +52,13 @@ class ClientHandler implements Runnable {
             Path path = Paths.get(fileName);
             message = "111";
             try{
-              byte[] fileContent = Files.readAllBytes(path);
+              String fileContent = new String(Files.readAllBytes(path));
               String contentType = "application/octet-stream"; // Adjust content type based on file type
               String httpResponse = "HTTP/1.1 200 OK\r\n" +
                   "Content-Type: " + contentType + "\r\n" +
-                  "Content-Length: " + fileContent.length + "\r\n" +
-                  "\r\n";
+                  "Content-Length: " + fileContent.length() + "\r\n" +
+                  "\r\n"+fileContent;
               clientSocket.getOutputStream().write(httpResponse.getBytes());
-              clientSocket.getOutputStream().write(fileContent);
               clientSocket.getOutputStream().flush();
             } catch(FileNotFoundException e) {
               clientSocket.getOutputStream().write(
