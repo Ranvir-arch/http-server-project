@@ -47,6 +47,7 @@ class ClientHandler implements Runnable {
             message = "000";
           } else if (requestParts[1].startsWith("/files/")) {
             String fileName = requestParts[1].substring("/files/".length());
+            System.out.println(fileName);
             Path path = Paths.get(fileName);
             message = "111";
             if (Files.exists(path)) {
