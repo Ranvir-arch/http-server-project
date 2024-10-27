@@ -1,5 +1,6 @@
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
@@ -50,7 +51,7 @@ class ClientHandler implements Runnable {
             System.out.println(fileName);
             Path path = Paths.get(fileName);
             message = "111";
-            if (Files.exists(path)) {
+            try () {
               byte[] fileContent = Files.readAllBytes(path);
               String contentType = "application/octet-stream"; // Adjust content type based on file type
               String httpResponse = "HTTP/1.1 200 OK\r\n" +
@@ -60,7 +61,7 @@ class ClientHandler implements Runnable {
               clientSocket.getOutputStream().write(httpResponse.getBytes());
               clientSocket.getOutputStream().write(fileContent);
               clientSocket.getOutputStream().flush();
-            } else {
+            } catch(FileNotFoundException e) {
               clientSocket.getOutputStream().write(
                   "HTTP/1.1 404 Not Found\r\n\r\n".getBytes());
             }
