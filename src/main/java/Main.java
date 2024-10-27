@@ -69,6 +69,7 @@ class ClientHandler implements Runnable {
             if(isGzip){
               if (requestParts[1].startsWith("/echo/")) {
                 message = requestParts[1].substring("/echo/".length());
+                System.out.println(message);
               }
               byte[] res;
               ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
