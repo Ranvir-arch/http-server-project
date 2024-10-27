@@ -79,8 +79,10 @@ class ClientHandler implements Runnable {
                 String result = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Encoding: gzip\r\nContent-Length: "+res.length +"\r\n\r\n";
               clientSocket.getOutputStream().write(result.getBytes());
               clientSocket.getOutputStream().write(res);
-              }
-              // String compressedMessage = new String(res);
+              return;
+              }catch (IOException e) {
+                System.out.println("Error handling client: " + e.getMessage());
+            }              
               
             }else{
               clientSocket.getOutputStream().write(
