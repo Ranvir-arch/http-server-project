@@ -51,7 +51,7 @@ class ClientHandler implements Runnable {
             System.out.println(fileName);
             Path path = Paths.get(fileName);
             message = "111";
-            try () {
+            try{
               byte[] fileContent = Files.readAllBytes(path);
               String contentType = "application/octet-stream"; // Adjust content type based on file type
               String httpResponse = "HTTP/1.1 200 OK\r\n" +
