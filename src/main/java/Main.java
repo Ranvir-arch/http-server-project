@@ -1,8 +1,12 @@
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,6 +45,24 @@ class ClientHandler implements Runnable {
             message = requestParts[1].substring("/echo/".length());
           } else if (requestParts[1].equals("/")) {
             message = "000";
+          } else if (requestParts[1].startsWith("/files/")) {
+            String fileName = requestParts[1].substring("/files/".length());
+            Path path = Paths.get(fileName);
+            message = "111";
+            if (Files.exists(path)) {
+              byte[] fileContent = Files.readAllBytes(path);
+              String contentType = "application/octet-stream"; // Adjust content type based on file type
+              String httpResponse = "HTTP/1.1 200 OK\r\n" +
+                  "Content-Type: " + contentType + "\r\n" +
+                  "Content-Length: " + fileContent.length + "\r\n" +
+                  "\r\n";
+              clientSocket.getOutputStream().write(httpResponse.getBytes());
+              clientSocket.getOutputStream().write(fileContent);
+              clientSocket.getOutputStream().flush();
+            } else {
+              clientSocket.getOutputStream().write(
+                  "HTTP/1.1 404 Not Found\r\n\r\n".getBytes());
+            }
           } else {
             message = "XXX";
           }
@@ -51,20 +73,22 @@ class ClientHandler implements Runnable {
         } else if (message.equals("000")) {
           clientSocket.getOutputStream().write(
               "HTTP/1.1 200 OK\r\n\r\n".getBytes());
-            } else {
-              String contentType = "text/plain"; // Specify the type of content
-              int contentLength = message.length(); // Get the length of the response body
-              System.out.println(message);
-              // Build HTTP response with headers
-              String httpResponse = "HTTP/1.1 200 OK\r\n" +
-                  "Content-Type: " + contentType + "\r\n" +
-                  "Content-Length: " + contentLength + "\r\n" +
-                  "\r\n" +
-                  message;
-              clientSocket.getOutputStream().write(
-                  httpResponse.getBytes());
-    
-            }    
+        } else if (message.equals("111")) {
+          System.out.println("Done");
+        } else {
+          String contentType = "text/plain"; // Specify the type of content
+          int contentLength = message.length(); // Get the length of the response body
+          System.out.println(message);
+          // Build HTTP response with headers
+          String httpResponse = "HTTP/1.1 200 OK\r\n" +
+              "Content-Type: " + contentType + "\r\n" +
+              "Content-Length: " + contentLength + "\r\n" +
+              "\r\n" +
+              message;
+          clientSocket.getOutputStream().write(
+              httpResponse.getBytes());
+
+        }
       }
     } catch (IOException e) {
       System.out.println("IOException: " + e.getMessage());
@@ -78,7 +102,6 @@ class ClientHandler implements Runnable {
   }
 
 }
-
 
 public class Main {
 
