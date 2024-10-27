@@ -1,10 +1,12 @@
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -35,11 +37,20 @@ class ClientHandler implements Runnable {
             headers.put(headerParts[0], headerParts[1]);
           }
         }
+        //reading body
+        String bodyLine = "";
+        if(headers.containsKey("Content-Length")){
+          int len = Integer.parseInt(headers.get("Content-Length"));
+          char[] body = new char[len];
+          in.read(body, 0, len);
+          bodyLine = new String(body); 
+        }
         String message = "";
+        
+
+
         if (headers.containsKey("User-Agent")) {
           message = headers.get("User-Agent");
-
-          // System.out.println(httpResponse);
 
         } else {
           String[] requestParts = requestLine.split(" ");
@@ -64,8 +75,19 @@ class ClientHandler implements Runnable {
               clientSocket.getOutputStream().write(httpResponse.getBytes());
               clientSocket.getOutputStream().flush();
             } catch(IOException e) {
-              clientSocket.getOutputStream().write(
-                  "HTTP/1.1 404 Not Found\r\n\r\n".getBytes());
+              if(bodyLine != null && !bodyLine.isEmpty()){
+                File file = new File(directory+fileName);
+                if (file.createNewFile()) {
+                  FileWriter fileWriter = new FileWriter(file);
+                  fileWriter.write(bodyLine);
+                  fileWriter.close();
+                }
+                clientSocket.getOutputStream().write(
+                  "HTTP/1.1 201 Created\r\n\r\n".getBytes());
+              }else{
+                clientSocket.getOutputStream().write(
+                    "HTTP/1.1 404 Not Found\r\n\r\n".getBytes());
+              }
             }
           } else {
             message = "XXX";
