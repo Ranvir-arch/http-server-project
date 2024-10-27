@@ -1,4 +1,5 @@
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -12,6 +13,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.zip.GZIPOutputStream;
 
 class ClientHandler implements Runnable {
   private final Socket clientSocket;
@@ -47,29 +49,42 @@ class ClientHandler implements Runnable {
         }
         String message = "";
 
-        if(headers.containsKey("Accept-Encoding")){
-          String[] encodings = headers.get("Accept-Encoding").split(", ");
-          boolean isGzip = false;
-          for(String encoding : encodings){
-            if(encoding.equals("gzip")){
-              isGzip = true;
-              break;
-            }
-          }
-          if(isGzip){
-            clientSocket.getOutputStream().write(
-            "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Encoding: gzip\r\n\r\n".getBytes());
-          }else{
-            clientSocket.getOutputStream().write(
-            "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n".getBytes());
-          }
-        }
+        
 
         if (headers.containsKey("User-Agent")) {
           message = headers.get("User-Agent");
 
         } else {
           String[] requestParts = requestLine.split(" ");
+          
+          if(headers.containsKey("Accept-Encoding")){
+            String[] encodings = headers.get("Accept-Encoding").split(", ");
+            boolean isGzip = false;
+            for(String encoding : encodings){
+              if(encoding.equals("gzip")){
+                isGzip = true;
+                break;
+              }
+            }
+            if(isGzip){
+              if (requestParts[1].startsWith("/echo/")) {
+                message = requestParts[1].substring("/echo/".length());
+              }
+              byte[] res;
+              ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+              try(GZIPOutputStream gzipOut = new GZIPOutputStream(byteArrayOutputStream)){
+                gzipOut.write(message.getBytes());
+                res = byteArrayOutputStream.toByteArray();
+              }
+              String compressedMessage = new String(res);
+              String result = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Encoding: gzip\r\nContent-Length: "+res.length +"\r\n\r\n"
+              +compressedMessage;
+              clientSocket.getOutputStream().write(result.getBytes());
+            }else{
+              clientSocket.getOutputStream().write(
+              "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n".getBytes());
+            }
+          }
 
           if (requestParts[1].startsWith("/echo/")) {
             message = requestParts[1].substring("/echo/".length());
