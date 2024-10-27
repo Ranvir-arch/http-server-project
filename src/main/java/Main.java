@@ -63,7 +63,7 @@ class ClientHandler implements Runnable {
                   "\r\n"+fileContent;
               clientSocket.getOutputStream().write(httpResponse.getBytes());
               clientSocket.getOutputStream().flush();
-            } catch(FileNotFoundException e) {
+            } catch(IOException e) {
               clientSocket.getOutputStream().write(
                   "HTTP/1.1 404 Not Found\r\n\r\n".getBytes());
             }
