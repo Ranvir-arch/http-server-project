@@ -46,8 +46,17 @@ class ClientHandler implements Runnable {
           bodyLine = new String(body); 
         }
         String message = "";
-        
 
+        if(headers.containsKey("Accept-Encoding")){
+          String encoding = headers.get("Accept-Encoding");
+          if(encoding.equals("gzip")){
+            clientSocket.getOutputStream().write(
+            "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Encoding: gzip\r\n\r\n".getBytes());
+          }else{
+            clientSocket.getOutputStream().write(
+            "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n".getBytes());
+          }
+        }
 
         if (headers.containsKey("User-Agent")) {
           message = headers.get("User-Agent");
