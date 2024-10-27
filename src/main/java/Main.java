@@ -75,10 +75,12 @@ class ClientHandler implements Runnable {
               ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
               try(GZIPOutputStream gzipOut = new GZIPOutputStream(byteArrayOutputStream)){
                 gzipOut.write(message.getBytes());
+                gzipOut.finish();
                 res = byteArrayOutputStream.toByteArray();
                 String result = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Encoding: gzip\r\nContent-Length: "+res.length +"\r\n\r\n";
               clientSocket.getOutputStream().write(result.getBytes());
               clientSocket.getOutputStream().write(res);
+              clientSocket.getOutputStream().flush();
               return;
               }catch (IOException e) {
                 System.out.println("Error handling client: " + e.getMessage());
