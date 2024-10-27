@@ -76,10 +76,10 @@ class ClientHandler implements Runnable {
                 gzipOut.write(message.getBytes());
                 res = byteArrayOutputStream.toByteArray();
               }
-              String compressedMessage = new String(res);
-              String result = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Encoding: gzip\r\nContent-Length: "+res.length +"\r\n\r\n"
-              +compressedMessage;
+              // String compressedMessage = new String(res);
+              String result = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Encoding: gzip\r\nContent-Length: "+res.length +"\r\n\r\n";
               clientSocket.getOutputStream().write(result.getBytes());
+              clientSocket.getOutputStream().write(res);
             }else{
               clientSocket.getOutputStream().write(
               "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\n".getBytes());
